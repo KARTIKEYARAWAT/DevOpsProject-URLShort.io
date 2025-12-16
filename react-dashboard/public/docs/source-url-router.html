@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Code: url-router</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0f111a; color: #a9b1d6; padding: 20px; line-height: 1.6; }
+        h1 { color: #7aa2f7; text-align: center; border-bottom: 2px solid #7aa2f7; padding-bottom: 10px; }
+        .file-block { margin-bottom: 40px; border: 1px solid #292e42; border-radius: 8px; overflow: hidden; }
+        .file-header { background-color: #1a1b26; padding: 10px 20px; border-bottom: 1px solid #292e42; color: #bb9af7; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        pre { margin: 0; padding: 20px; overflow-x: auto; background-color: #0f111a; }
+        code { font-size: 24px; }
+        .copy-btn { background: #7aa2f7; color: #1a1b26; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .copy-btn:hover { background: #bb9af7; }
+    </style>
+</head>
+<body>
+    <h1>url-router - Source Code Report</h1>
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.file-block').querySelector('pre');
+            const code = pre.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
+    </script>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/router/controller/RouterController.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.router.controller;
+
+import com.distributed.url.core.dto.ShortenRequest;
+import com.distributed.url.core.dto.NodeShortenRequest;
+import com.distributed.url.core.dto.ShortenResponse;
+import com.distributed.url.core.util.HashUtil;
+import com.distributed.url.router.service.ConsistentHashRing;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import org.springframework.web.servlet.view.RedirectView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class RouterController {
+
+    @Autowired
+    private ConsistentHashRing ring;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @PostMapping("/shorten")
+    public ShortenResponse shorten(@RequestBody ShortenRequest request) {
+        String originalUrl = request.getOriginalUrl();
+        // Generate key logic here because we need it for hashing to choose node
+        // In real world, we might use a key-generator service.
+        // If custom alias is provided, use it. Otherwise, use hash of URL.
+        String key;
+        if (request.getCustomAlias() != null &amp;&amp; !request.getCustomAlias().isEmpty()) {
+            key = request.getCustomAlias();
+        } else {
+            key = Integer.toHexString(HashUtil.getHash(request.getOriginalUrl()));
+        }
+
+        String primaryNode = ring.getNode(key);
+        String replicaNode = ring.getNextNode(key, primaryNode);
+
+        if (primaryNode == null) {
+            throw new RuntimeException("No nodes available!");
+        }
+
+        System.out.println("Routing '" + key + "' to Primary: " + primaryNode + ", Replica: " + replicaNode);
+
+        // Prepare request for Node (tell it to replicate if we want source-routing
+        // replication,
+        // OR we just call primary and pass replica address)
+        NodeShortenRequest nodeReq = new NodeShortenRequest(originalUrl, key, replicaNode);
+
+        try {
+            return restTemplate.postForObject(primaryNode + "/api/node/shorten", nodeReq, ShortenResponse.class);
+        } catch (Exception e) {
+            // If primary fails during this call, try sending directly to replica
+            System.err.println("Primary failed during write, trying replica: " + replicaNode);
+            if (replicaNode != null) {
+                NodeShortenRequest replicaDirectReq = new NodeShortenRequest(originalUrl, key, null);
+                return restTemplate.postForObject(replicaNode + "/api/node/shorten", replicaDirectReq,
+                        ShortenResponse.class);
+            }
+            throw e;
+        }
+    }
+
+    @GetMapping("/{key}")
+    public RedirectView redirect(@PathVariable String key) {
+        // Logic: Ask Node for URL
+        String nodeUrl = ring.getNode(key);
+        try {
+            String longUrl = restTemplate.getForObject(nodeUrl + "/api/node/lookup/" + key, String.class);
+            return new RedirectView(longUrl);
+        } catch (Exception e) {
+            // Fallback to replica?
+            // Need to find replica node logic again
+            // Simplified: just try next node
+            String replica = ring.getNextNode(key, nodeUrl);
+            if (replica != null) {
+                try {
+                    String longUrl = restTemplate.getForObject(replica + "/api/node/lookup/" + key, String.class);
+                    return new RedirectView(longUrl);
+                } catch (Exception ex) {
+                    // fail
+                }
+            }
+        }
+        return new RedirectView("/error");
+    }
+
+    @GetMapping("/nodes")
+    public Map&lt;String, Object&gt; getNodesStatus() {
+        Map&lt;String, Object&gt; status = new HashMap&lt;&gt;();
+        List&lt;Map&lt;String, Object&gt;&gt; nodeList = new ArrayList&lt;&gt;();
+
+        for (String node : ring.getAllNodes()) {
+            Map&lt;String, Object&gt; nodeInfo = new HashMap&lt;&gt;();
+            nodeInfo.put("url", node);
+            boolean isHealthy = ring.isHealthy(node);
+            nodeInfo.put("status", isHealthy ? "Online" : "Offline");
+
+            if (isHealthy) {
+                try {
+                    Map&lt;String, String&gt; stats = restTemplate.getForObject(node + "/api/node/stats", Map.class);
+                    nodeInfo.put("keys", stats != null ? stats.size() : 0);
+                } catch (Exception e) {
+                    nodeInfo.put("keys", 0);
+                }
+            } else {
+                nodeInfo.put("keys", 0);
+            }
+            nodeList.add(nodeInfo);
+        }
+        status.put("nodes", nodeList);
+        status.put("strategy", "Consistent Hashing + Replication");
+        return status;
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/router/RouterApplication.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.router;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class RouterApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(RouterApplication.class, args);
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/router/service/ConsistentHashRing.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.router.service;
+
+import com.distributed.url.core.util.HashUtil;
+import org.springframework.stereotype.Service;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
+
+@Service
+public class ConsistentHashRing {
+
+    // Sorted Map: Hash -&gt; Node URL
+    private final ConcurrentSkipListMap&lt;Integer, String&gt; circle = new ConcurrentSkipListMap&lt;&gt;();
+    private final List&lt;String&gt; nodes = new ArrayList&lt;&gt;();
+    private final Set&lt;String&gt; deadNodes = new HashSet&lt;&gt;();
+    private final int VIRTUAL_NODES = 5; // Replicas on ring per physical node
+
+    public ConsistentHashRing() {
+        // Initial nodes
+        addNode("http://localhost:8081");
+        addNode("http://localhost:8082");
+        addNode("http://localhost:8083");
+    }
+
+    public void addNode(String nodeUrl) {
+        nodes.add(nodeUrl);
+        deadNodes.remove(nodeUrl);
+        for (int i = 0; i &lt; VIRTUAL_NODES; i++) {
+            circle.put(HashUtil.getHash(nodeUrl + "-" + i), nodeUrl);
+        }
+        System.out.println("Added node: " + nodeUrl);
+    }
+
+    public void removeNode(String nodeUrl) {
+        if (!deadNodes.contains(nodeUrl)) {
+            deadNodes.add(nodeUrl);
+            // We don't remove from 'nodes' list to keep track, but we remove from circle
+            for (int i = 0; i &lt; VIRTUAL_NODES; i++) {
+                circle.remove(HashUtil.getHash(nodeUrl + "-" + i));
+            }
+            System.out.println("Removed node from ring: " + nodeUrl);
+        }
+    }
+
+    public String getNode(String key) {
+        if (circle.isEmpty())
+            return null;
+        int hash = HashUtil.getHash(key);
+        Map.Entry&lt;Integer, String&gt; entry = circle.ceilingEntry(hash);
+        if (entry == null) {
+            entry = circle.firstEntry();
+        }
+        return entry.getValue();
+    }
+
+    // Get backup node (next one in ring)
+    public String getNextNode(String key, String primaryNode) {
+        if (circle.size() &lt;= VIRTUAL_NODES)
+            return null; // Only one physical node exists
+
+        int hash = HashUtil.getHash(key);
+        // Find positions
+        Map.Entry&lt;Integer, String&gt; entry = circle.ceilingEntry(hash);
+        if (entry == null)
+            entry = circle.firstEntry();
+
+        // Iterator to find next DISTINCT physical node
+        // In a real impl, we'd iterate the circle. For simplicity, we just look
+        // forward.
+        // Actually, we can just jump on the circle map keys.
+
+        NavigableMap&lt;Integer, String&gt; tailMap = circle.tailMap(entry.getKey(), false);
+        for (String node : tailMap.values()) {
+            if (!node.equals(primaryNode))
+                return node;
+        }
+        // Wrap around
+        for (String node : circle.values()) {
+            if (!node.equals(primaryNode))
+                return node;
+        }
+        return null; // Should not happen if &gt;1 nodes
+    }
+
+    public List&lt;String&gt; getAllNodes() {
+        return nodes;
+    }
+
+    public boolean isHealthy(String node) {
+        return !deadNodes.contains(node);
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/router/service/NodeHealthMonitor.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.router.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class NodeHealthMonitor {
+
+    @Autowired
+    private ConsistentHashRing ring;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Scheduled(fixedRate = 5000)
+    public void checkHealth() {
+        for (String node : ring.getAllNodes()) {
+            try {
+                restTemplate.getForEntity(node + "/api/node/health", String.class);
+                // If success, ensure it's in the ring (logic triggers if it WAS dead)
+                if (!ring.isHealthy(node)) {
+                    ring.addNode(node);
+                    System.out.println("Node recovered: " + node);
+                }
+            } catch (Exception e) {
+                // Determine if it was healthy before
+                if (ring.isHealthy(node)) {
+                    System.err.println("Node FAILED: " + node);
+                    ring.removeNode(node);
+                }
+            }
+        }
+    }
+}
+</code></pre>
+    </div>
+
+</body>
+</html>

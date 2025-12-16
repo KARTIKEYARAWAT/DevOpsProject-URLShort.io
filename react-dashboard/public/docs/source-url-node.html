@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Code: url-node</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0f111a; color: #a9b1d6; padding: 20px; line-height: 1.6; }
+        h1 { color: #7aa2f7; text-align: center; border-bottom: 2px solid #7aa2f7; padding-bottom: 10px; }
+        .file-block { margin-bottom: 40px; border: 1px solid #292e42; border-radius: 8px; overflow: hidden; }
+        .file-header { background-color: #1a1b26; padding: 10px 20px; border-bottom: 1px solid #292e42; color: #bb9af7; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        pre { margin: 0; padding: 20px; overflow-x: auto; background-color: #0f111a; }
+        code { font-size: 24px; }
+        .copy-btn { background: #7aa2f7; color: #1a1b26; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .copy-btn:hover { background: #bb9af7; }
+    </style>
+</head>
+<body>
+    <h1>url-node - Source Code Report</h1>
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.file-block').querySelector('pre');
+            const code = pre.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
+    </script>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/node/controller/NodeController.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.node.controller;
+
+import com.distributed.url.core.dto.NodeShortenRequest;
+import com.distributed.url.core.dto.ShortenResponse;
+import com.distributed.url.node.service.UrlStore;
+import com.distributed.url.core.util.HashUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/node")
+public class NodeController {
+
+    @Autowired
+    private UrlStore urlStore;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @PostMapping("/shorten")
+    public ShortenResponse shorten(@RequestBody NodeShortenRequest request) {
+        String key;
+        if (request.getShortKey() != null) {
+            key = request.getShortKey();
+        } else {
+            // Generate simple hash or random key if not provided (Primary Node logic)
+            // For simplicity, using HashUtil on the URL + timestamp to ensure uniqueness or
+            // just Hash(URL)
+            // But for distributed, we prefer Router given ID or consistent generation.
+            // Let's assume Router generates Key OR Node generates.
+            // Requirement says "Consistent Hashing for node selection", doesn't specify Key
+            // gen.
+            // I'll make the KEY derived from URL for now.
+            key = Integer.toHexString(HashUtil.getHash(request.getOriginalUrl()));
+        }
+
+        urlStore.save(key, request.getOriginalUrl());
+        System.out.println("Stored key=" + key + " val=" + request.getOriginalUrl());
+
+        // Replication
+        if (request.getReplicateTo() != null &amp;&amp; !request.getReplicateTo().isEmpty()) {
+            try {
+                // Call replica
+                NodeShortenRequest replicaReq = new NodeShortenRequest(request.getOriginalUrl(), key, null);
+                String replicaUrl = request.getReplicateTo() + "/api/node/shorten";
+                System.out.println("Replicating to: " + replicaUrl);
+                restTemplate.postForEntity(replicaUrl, replicaReq, ShortenResponse.class);
+            } catch (Exception e) {
+                System.err.println("Replication failed: " + e.getMessage());
+            }
+        }
+
+        return new ShortenResponse(key, request.getOriginalUrl(), "LocalNode", request.getShortKey() != null);
+    }
+
+    @GetMapping("/lookup/{key}")
+    public ResponseEntity&lt;String&gt; lookup(@PathVariable String key) {
+        String url = urlStore.get(key);
+        if (url != null) {
+            return ResponseEntity.ok(url);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity&lt;String&gt; health() {
+        return ResponseEntity.ok("UP");
+    }
+
+    @GetMapping("/stats")
+    public Map&lt;String, String&gt; stats() {
+        return urlStore.getAll();
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/node/NodeApplication.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.node;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class NodeApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(NodeApplication.class, args);
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/node/service/UrlStore.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.node.service;
+
+import org.springframework.stereotype.Service;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+
+@Service
+public class UrlStore {
+    private final Map&lt;String, String&gt; store = new ConcurrentHashMap&lt;&gt;();
+
+    public void save(String key, String url) {
+        store.put(key, url);
+    }
+
+    public String get(String key) {
+        return store.get(key);
+    }
+
+    public Map&lt;String, String&gt; getAll() {
+        return store;
+    }
+}
+</code></pre>
+    </div>
+
+</body>
+</html>

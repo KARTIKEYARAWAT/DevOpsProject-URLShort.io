@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAR Artifacts Report - Distributed URL Shortener</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+            font-size: 1.2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid #f59e0b;
+            /* Amber/Yellow accent */
+            padding-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: #222;
+            border-left: 5px solid #f59e0b;
+            padding-left: 15px;
+        }
+
+        .file-card {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #d97706;
+            background: #fff;
+            padding: 15px;
+            border-radius: 50%;
+            border: 1px solid #fcd34d;
+        }
+
+        .file-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.5rem;
+            color: #111;
+        }
+
+        .file-info p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #666;
+            text-align: left;
+        }
+
+        .tree-view {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        footer {
+            margin-top: 5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                padding: 0.5in;
+            }
+
+            .tree-view {
+                background-color: #f1f5f9;
+                color: #000;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>WAR Artifacts Report</h1>
+    <div class="subtitle">Distributed URL Shortener System • Deployment Packages</div>
+
+    <h2>1. Generated Components</h2>
+    <p>The build process successfully generated 3 Enterprise Web Archives (WARs). These are the deployable units of the
+        system.</p>
+
+    <div class="file-card">
+        <div class="file-icon">📦</div>
+        <div class="file-info">
+            <h3>url-dashboard.war</h3>
+            <p><strong>Role:</strong> Frontend & User Interface</p>
+            <p>Contains the compiled React application served via Spring Boot's static resources. This is what the user
+                interacts with.</p>
+        </div>
+    </div>
+
+    <div class="file-card">
+        <div class="file-icon">🛣️</div>
+        <div class="file-info">
+            <h3>url-router.war</h3>
+            <p><strong>Role:</strong> Traffic Controller</p>
+            <p>Handles incoming requests, executes the Consistent Hashing algorithm, and routes traffic to the
+                appropriate storage node.</p>
+        </div>
+    </div>
+
+    <div class="file-card">
+        <div class="file-icon">💾</div>
+        <div class="file-info">
+            <h3>url-node.war</h3>
+            <p><strong>Role:</strong> Storage Unit</p>
+            <p>A scalable storage instance. In a production environment, you would verify scalability by deploying
+                multiple copies of this WAR.</p>
+        </div>
+    </div>
+
+    <h2>2. Internal Structure (Anatomy of a WAR)</h2>
+    <p>Each WAR file follows the standard Java EE and Spring Boot directory structure. This ensures compatibility with
+        Tomcat, Jetty, and other Servlet containers.</p>
+
+    <div class="tree-view">
+        project-name.war
+        ├── META-INF
+        │ └── MANIFEST.MF <span style="color:#94a3b8;"># Metadata (Main-Class, Version)</span>
+        ├── WEB-INF
+        │ ├── classes <span style="color:#94a3b8;"># Compiled application code (.class files)</span>
+        │ │ ├── com
+        │ │ │ └── distributed
+        │ │ │ └── ...
+        │ │ └── application.yml <span style="color:#94a3b8;"># Configuration</span>
+        │ ├── lib <span style="color:#94a3b8;"># Dependencies (JARs)</span>
+        │ │ ├── spring-boot.jar
+        │ │ ├── tomcat-embed.jar
+        │ │ └── ...
+        │ └── web.xml <span style="color:#94a3b8;"># (Optional in Spring Boot) Deployment Descriptor</span>
+        └── index.html <span style="color:#94a3b8;"># Static assets (Frontend)</span>
+    </div>
+
+    <h2>3. Deployment Verification</h2>
+    <p>
+        These files have been moved to the <code>deployment-artifacts</code> directory for easy access. They are
+        verified to include the embedded Tomcat server, making them capable of running standalone via
+        <code>java -jar</code> or being deployed to an external web server.
+    </p>
+
+    <footer>
+        Generated for Continuous Assessment • Distributed Systems Project
+    </footer>
+
+</body>
+
+</html>

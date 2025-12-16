@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Root Project",
+    "type": "file",
+    "path": "pom.xml",
+    "language": "xml"
+  },
+  {
+    "name": "url-node",
+    "type": "file",
+    "path": "url-node/pom.xml",
+    "language": "xml"
+  },
+  {
+    "name": "url-router",
+    "type": "file",
+    "path": "url-router/pom.xml",
+    "language": "xml"
+  },
+  {
+    "name": "url-dashboard",
+    "type": "file",
+    "path": "url-dashboard/pom.xml",
+    "language": "xml"
+  },
+  {
+    "name": "url-core",
+    "type": "file",
+    "path": "url-core/pom.xml",
+    "language": "xml"
+  }
+]

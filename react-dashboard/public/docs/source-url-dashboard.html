@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Code: url-dashboard</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0f111a; color: #a9b1d6; padding: 20px; line-height: 1.6; }
+        h1 { color: #7aa2f7; text-align: center; border-bottom: 2px solid #7aa2f7; padding-bottom: 10px; }
+        .file-block { margin-bottom: 40px; border: 1px solid #292e42; border-radius: 8px; overflow: hidden; }
+        .file-header { background-color: #1a1b26; padding: 10px 20px; border-bottom: 1px solid #292e42; color: #bb9af7; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        pre { margin: 0; padding: 20px; overflow-x: auto; background-color: #0f111a; }
+        code { font-size: 24px; }
+        .copy-btn { background: #7aa2f7; color: #1a1b26; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .copy-btn:hover { background: #bb9af7; }
+    </style>
+</head>
+<body>
+    <h1>url-dashboard - Source Code Report</h1>
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.file-block').querySelector('pre');
+            const code = pre.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
+    </script>
+
+    <div class="file-block">
+        <div class="file-header">
+            <span>com/distributed/url/dashboard/DashboardApplication.java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>package com.distributed.url.dashboard;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DashboardApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DashboardApplication.class, args);
+    }
+}
+</code></pre>
+    </div>
+
+</body>
+</html>

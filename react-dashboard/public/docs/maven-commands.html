@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maven Commands Guide - Distributed URL Shortener</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+            font-size: 1.2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid #ec4899;
+            /* Pink accent */
+            padding-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: #222;
+            border-left: 5px solid #ec4899;
+            padding-left: 15px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #444;
+        }
+
+        .code-block {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            border: 1px solid #334155;
+            font-size: 1.1rem;
+        }
+
+        .command {
+            color: #4ade80;
+            /* Green for command */
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .comment {
+            color: #94a3b8;
+            font-style: italic;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .warning-box {
+            background-color: #fff1f2;
+            border: 1px solid #fda4af;
+            color: #9f1239;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            font-size: 1.1rem;
+        }
+
+        footer {
+            margin-top: 5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                padding: 0.5in;
+            }
+
+            .code-block {
+                background-color: #f1f5f9;
+                color: #000;
+                border: 1px solid #ccc;
+            }
+
+            .command {
+                color: #000;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Maven Commands Guide</h1>
+    <div class="subtitle">Distributed URL Shortener System • Operational Manual</div>
+
+    <div class="warning-box">
+        <strong>Prerequisites:</strong> Ensure <code>Java 17+</code> and <code>Maven 3.8+</code> are installed and added
+        to your system PATH.
+    </div>
+
+    <h2>1. Internal Tomcat (Development)</h2>
+    <p>
+        The project uses Spring Boot, which includes an <strong>Embedded Tomcat</strong> server. This is the easiest way
+        to run the application during development or for simple deployments.
+    </p>
+
+    <h3>Run from Source (No Build Needed)</h3>
+    <div class="code-block">
+        <span class="comment"># Run the Dashboard/Backend directly</span>
+        <span class="command">mvn spring-boot:run</span>
+    </div>
+
+    <h3>Run as Executable JAR</h3>
+    <div class="code-block">
+        <span class="comment"># First, clean and package the project</span>
+        <span class="command">mvn clean package -DskipTests</span>
+        <br><br>
+        <span class="comment"># Then run the resulting JAR file</span>
+        <span class="command">java -jar target/url-dashboard-1.0-SNAPSHOT.war</span>
+    </div>
+
+    <h2>2. External Tomcat (Production)</h2>
+    <p>
+        For deployment to a standalone Apache Tomcat server (e.g., on a cloud VM or enterprise server), you must
+        generate WAR files.
+    </p>
+
+    <h3>Generate WAR Files</h3>
+    <div class="code-block">
+        <span class="comment"># Clean previous builds and generate WARs for all modules</span>
+        <span class="command">mvn clean package -DskipTests</span>
+    </div>
+
+    <h3>Deployment Steps</h3>
+    <ol>
+        <li>Locate the <code>.war</code> files in the <code>target</code> folder (or <code>deployment-artifacts</code>
+            folder).</li>
+        <li>Copy the WAR file to your Tomcat's <code>webapps</code> directory.</li>
+        <li>Start the Tomcat service (e.g., <code>bin/startup.bat</code>).</li>
+        <li>Tomcat will automatically extract and deploy the application.</li>
+    </ol>
+
+    <h2>3. Common Maintenance Commands</h2>
+
+    <h3>Clean Project</h3>
+    <p>Removes the <code>target</code> directory and all generated artifacts.</p>
+    <div class="code-block">
+        <span class="command">mvn clean</span>
+    </div>
+
+    <h3>Install Dependencies</h3>
+    <p>Downloads all dependencies defined in <code>pom.xml</code> to your local repository.</p>
+    <div class="code-block">
+        <span class="command">mvn install -DskipTests</span>
+    </div>
+
+    <footer>
+        Generated for Continuous Assessment • Distributed Systems Project
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAR Artifacts Report - Distributed URL Shortener</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+            font-size: 1.2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid #f59e0b;
+            /* Amber/Yellow accent */
+            padding-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: #222;
+            border-left: 5px solid #f59e0b;
+            padding-left: 15px;
+        }
+
+        .file-card {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #d97706;
+            background: #fff;
+            padding: 15px;
+            border-radius: 50%;
+            border: 1px solid #fcd34d;
+        }
+
+        .file-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.5rem;
+            color: #111;
+        }
+
+        .file-info p {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #666;
+            text-align: left;
+        }
+
+        .tree-view {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        footer {
+            margin-top: 5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                padding: 0.5in;
+            }
+
+            .tree-view {
+                background-color: #f1f5f9;
+                color: #000;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>JAR Artifacts Report</h1>
+    <div class="subtitle">Distributed URL Shortener System • Library Packages</div>
+
+    <h2>1. Generated Components</h2>
+    <p>The build process generates Java Archive (JAR) files. These contain the compiled class files and metadata
+        required for the application modules.</p>
+
+    <div class="file-card">
+        <div class="file-icon">📦</div>
+        <div class="file-info">
+            <h3>url-core.jar</h3>
+            <p><strong>Role:</strong> Shared Library</p>
+            <p>Contains common utilities, domain models, and interfaces shared across the Router and Node services.</p>
+        </div>
+    </div>
+
+    <div class="file-card">
+        <div class="file-icon">☕</div>
+        <div class="file-info">
+            <h3>Executable JARs</h3>
+            <p><strong>Role:</strong> Standalone Services</p>
+            <p>The <code>url-node</code>, <code>url-router</code>, and <code>url-dashboard</code> modules are packaged
+                as executable JARs with embedded servers.</p>
+        </div>
+    </div>
+
+    <h2>2. Internal Structure (Anatomy of a JAR)</h2>
+    <p>A JAR file is a ZIP file format used to aggregate many Java class files and associated metadata and resources
+        (text, images, etc.) into one file for distribution.</p>
+
+    <div class="tree-view">
+        project-name.jar
+        ├── META-INF
+        │ └── MANIFEST.MF <span style="color:#94a3b8;"># Main-Class definition</span>
+        │ └── maven
+        │ └── ... <span style="color:#94a3b8;"># Build properties</span>
+        ├── com
+        │ └── distributed
+        │ └── core
+        │ ├── models
+        │ │ └── UrlMapping.class
+        │ └── utils
+        │ └── HashGenerator.class
+        └── application.properties <span style="color:#94a3b8;"># Embedded config</span>
+    </div>
+
+    <h2>3. Usage</h2>
+    <p>
+        Executable JARs can be run directly using the Java runtime environment:
+        <br>
+        <code>java -jar module-name.jar</code>
+    </p>
+
+    <footer>
+        Generated for Continuous Assessment • Distributed Systems Project
+    </footer>
+
+</body>
+
+</html>
