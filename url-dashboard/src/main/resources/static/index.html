@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributed URL Shortener</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="neon-text">DISTRIBUTED URL SHORTENER</h1>
+            <p class="subtitle">Fault-Tolerant • Consistent Hashing • Replicated</p>
+        </header>
+
+        <section class="main-interface">
+            <div class="input-zone">
+                <div class="cube-container">
+                    <div class="cube">
+                        <div class="face front">Enter URL</div>
+                        <div class="face back">Shorten!</div>
+                        <div class="face right"></div>
+                        <div class="face left"></div>
+                        <div class="face top"></div>
+                        <div class="face bottom"></div>
+                    </div>
+                </div>
+                <input type="text" id="urlInput" placeholder="https://example.com/long-url..." class="cyber-input">
+                <button onclick="shortenUrl()" class="cyber-button">SHORTEN LINK</button>
+            </div>
+            
+            <div id="resultArea" class="result-hidden">
+                <p>Shortened URL:</p>
+                <a href="#" id="shortLink" target="_blank" class="glowing-link">PENDING...</a>
+                <p class="node-info">Handled by: <span id="nodeHandler">...</span> (Replica: <span id="isReplica">No</span>)</p>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="card status-card">
+                <h3>System Health</h3>
+                <canvas id="healthChart"></canvas>
+            </div>
+            <div class="card map-card">
+                <h3>Node Replication Map</h3>
+                <div id="nodeList" class="node-list">
+                    <!-- Nodes injected here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="docs-section">
+            <div class="doc-box" onclick="downloadDocs()">
+                <div class="doc-icon">📄</div>
+                <h3>Project Insight</h3>
+                <p>Click to download detailed architecture PDF</p>
+            </div>
+        </section>
+    </div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
